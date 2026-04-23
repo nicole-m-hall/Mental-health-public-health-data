@@ -1,6 +1,8 @@
 # Mental-health-public-health-data
-Independent project using mental health data from Public Health Scotland. This was used to analyse mental health data from https://opendata.scot/datasets/public+health+scotland-mental+health+inpatient+activity/
+Independent project using mental health data from Public Health Scotland. This was used to analyse mental health data from https://opendata.scot/datasets/public+health+scotland-mental+health+inpatient+activity/. This was conducted because I have a keen interest in public health and ways to improve it. I also wanted to further develop my analytical skills using large datasets.
 
-This small project used RStudio to analyse and present findings including; The number of mental health patients is linked (1) Scottish Index of Multiple Deprivation and (2) Health Board.
+Key findings: (1) Patients in the most deprived areas (SIMD = 1) consistently outnumber those in the least deprived areas (SIMD = 5) from 1997 to 2023, (2) NHS Greater Glasgow and Clyde shows the highest patient numbers of any health board and (3) Overall patient numbers have declined since 1997 but remain persistently high
 
-Some suggestions for tackling this problem were made and how to prevent the number of people needing mental health intervention from increasing.
+Tools used: RStudio (ggplot, dplyr, readxl)
+
+Data source: https://opendata.scot/datasets/public+health+scotland-mental+health+inpatient+activity/
