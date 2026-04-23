@@ -1,0 +1,138 @@
+---
+title: "Mental Health Data Public Health Scotland"
+output:
+  html_document: default
+date: "April 2026"
+---
+
+```{r setup, include=FALSE}
+#knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = FALSE)
+
+library(readxl)
+library(ggplot2)
+library(dplyr)
+
+mental_health_data <- read_xlsx("mental-health-inpatient-activity-deprivation.xlsx", guess_max = 5000)
+
+
+# Filter to discount Scotland total in health board data
+filtered_data <- subset(mental_health_data, HBR != "S92000003")
+
+# Total SIMD data for same year across all health boards
+SIMD_data <- aggregate(PatientsCount ~ FinancialYear + SIMD,
+                  data = filtered_data,
+                  FUN = sum,
+                  na.action = na.pass)
+
+# Total data for same year across each health boards
+HBR_data <- aggregate(PatientsCount ~ FinancialYear + HBR,
+                  data = filtered_data,
+                  FUN = sum,
+                  na.action = na.pass)
+HBR_data <- HBR_data %>%
+  mutate(HBR = recode(HBR,
+                      "S08000015" = "NHS Ayrshire and Arran",
+                      "S08000016" = "NHS Borders",
+                      "S08000017" = "NHS Dumfries and Galloway",
+                      "S08000018" = "NHS Fife",
+                      "S08000019" = "NHS Forth Valley",
+                      "S08000020" = "NHS Grampian",
+                      "S08000021" = "NHS Greater Glasgow and Clyde",
+                      "S08000022" = "NHS Highland",
+                      "S08000023" = "NHS Lanarkshire",
+                      "S08000024" = "NHS Lothian",
+                      "S08000025" = "NHS Orkney",
+                      "S08000026" = "NHS Shetland",
+                      "S08000027" = "NHS Tayside",
+                      "S08000028" = "NHS Western Isles",
+                      "S08000029" = "NHS Fife",
+                      "S08000030" = "NHS Tayside",
+                      "S08000031" = "NHS Greater Glasgow and Clyde",
+                      "S08000032" = "NHS Lanarkshire"))
+
+
+# Percentage patients based on health board
+percentage_mental_health_data <- read_xlsx("Percentage_population.xlsx", guess_max = 5000)
+
+SIMD_data_percentage <- aggregate(PercentagePop ~ Year + SIMD,
+                  data = percentage_mental_health_data,
+                  FUN = sum,
+                  na.action = na.pass)
+
+
+
+
+
+```
+
+## Number of Mental Health Patients in Scotland by Year
+
+In general, the number of mental health patients was trending down from 1997 to 2023, however, there was a small increase from 2014 to 2018.
+
+```{r year, echo=FALSE}
+
+# Bar graph for total mental health patients in each year
+ggplot(filtered_data) +
+  geom_bar(aes(x = filtered_data$FinancialYear, y = filtered_data$PatientsCount), stat = 'identity', fill = 'skyblue', alpha = 0.7) +
+    labs( title = "Number of Patients per year (1997 to 2023)",
+        x = "Year",
+        y = "Number of Patients",
+        color = "SIMD") +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Number of Patients based on Deprivation Index
+
+The line graph shown below suggests there is a general trend in mental health patients compared to the Scottish Index of Multiple Deprivation (SIMD). SIMD refers to how deprived an area is. This is ranked with quantiles 1 (most deprived) to 5 (least deprived). As can be seen by the graph, the number of patients living in areas classed as 1 on SIMD shows to be consistently higher compared to other SIMD's, from 1997 to 2023. This could be due to societal factors (such as unemployment), or environmental factors (such as housing). It is clear from this data, people living in areas with more deprivation are more at risk for developing mental health issues.
+
+```{r SIMD, echo=FALSE}
+# Line graph for patient data based on SIMD
+ggplot(data = SIMD_data, aes(x = FinancialYear, y = PatientsCount, color = SIMD, group = SIMD)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  labs( title = "Number of Patients based on SIMD",
+        x = "Year",
+        y = "Number of Patients",
+        color = "Depravation Index") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggplot(data = SIMD_data_percentage, aes(x = Year, y = PercentagePop, color = SIMD, group = SIMD)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  labs( title = "Percentage of Patients based on SIMD (Percentage of Scotland Population)",
+        x = "Year",
+        y = "Percentage of Patients",
+        color = "Depravation Index") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+## Number of Patients based on Health Board
+
+The graph below shows mental health patients based on where they live and which health board they live in. It can be seen that S0800031 (NHS Greater Glasgow and Clyde) have consistently higher numbers of mental health patients. This could be due to the fact this is the largest health board in Scotland (in terms of population), so includes many people. In 2023, there were 1,201,800 people associated with NHS Greater Glasgow and Clyde compared to 920,590 people in NHS Lothian (S08000024). NHS Greater Glasgow and Clyde also includes many deprived areas, compared to NHS Lothian.
+
+```{r Health Board, echo=FALSE}
+# Line graph for patient data based on health board
+ggplot(data = HBR_data, aes(x = FinancialYear, y = PatientsCount, color = HBR, group = HBR)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  labs( title = "Number of Patients based on Health Board",
+        x = "Year",
+        y = "Number of Patients",
+        color = "Health Board") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Discussion and Next Steps
+
+This data shows there is more work to be done in terms of mental health treatment for patients. There has not been a large change from 1997 to 2023. There was a small decrease, however, this number increased again and stayed consistently at this level for a number of years. 
+
+Areas to be highlighted and should receive concentrated help is NHS Greater Glasgow and Clyde. This health board showed consistently high patient numbers compared to the rest of Scotland. Although this may be attributed to a larger population, there are more areas of deprivation in this health board. People in deprived areas are more likely to be affected by poverty, which could contribute to mental health problems. Perhaps specialised mental health clinics should be available in these specific areas. This could give more accessible mental health treatments and may help to prevent mental health issues. More appointments for counsellors, psychologists and psychiatrists should be made available to cut down on waiting lists and waiting times for appointments. Early interventions are usually best, especially for mental health.
+
+One drawback from this analysis is the data may be an underestimate. Not all people who suffer from mental health problem may contact the NHS about it, so the prevelance of mental health issues are most likely higher than reported, across Scotland.
+
+
